@@ -123,12 +123,18 @@ function install(){
         make && make install
         if [ $? -eq 0 ]; then
             # Add run on system start up
-            cat /etc/rc.local | grep 'ss-server' > /dev/null 2>&1
-            if [ $? -ne 0 ]; then
-                echo "nohup /usr/local/bin/ss-server -c /etc/shadowsocks/config.json > /dev/null 2>&1 &" >> /etc/rc.local
-            fi
-            # Run shadowsocks in the background
-            nohup /usr/local/bin/ss-server -c /etc/shadowsocks/config.json > /dev/null 2>&1 &
+			wget --no-check-certificate https://github.com/madeye/shadowsocks-libev/raw/master/debian/shadowsocks.init -O /etc/init.d/shadowsocks
+			wget --no-check-certificate https://github.com/madeye/shadowsocks-libev/raw/master/debian/shadowsocks.default -O /etc/default/shadowsocks
+			sed -i "s#DAEMON=/usr/bin/ss-server#DAEMON=/usr/local/bin/ss-server#g" /etc/init.d/shadowsocks
+			update-rc.d apache2 defaults
+			/etc/init.d/shadowsocks start
+			
+            # cat /etc/rc.local | grep 'ss-server' > /dev/null 2>&1
+            # if [ $? -ne 0 ]; then
+                # echo "nohup /usr/local/bin/ss-server -c /etc/shadowsocks/config.json > /dev/null 2>&1 &" >> /etc/rc.local
+            # fi
+            # # Run shadowsocks in the background
+            # nohup /usr/local/bin/ss-server -c /etc/shadowsocks/config.json > /dev/null 2>&1 &
             # Run success or not
             ps -ef | grep -v grep | grep -v ps | grep -i '/usr/local/bin/ss-server' > /dev/null 2>&1
             if [ $? -eq 0 ]; then
@@ -180,6 +186,9 @@ function uninstall_shadowsocks_libev(){
             done
         fi
         # delete config file
+		update-rc.d -f apache2 remove
+		rm -rf /etc/init.d/shadowsocks
+		rm -rf /etc/default/shadowsocks
         rm -rf /etc/shadowsocks
         # delete shadowsocks
         rm -f /usr/local/bin/ss-local
