@@ -38,7 +38,7 @@ function install_lnmp() {
 # setup php5
 	rm -rf /var/www
 	mkdir -p /var/www
-	wget -P "/var/www/" http://kwxiaozhu.googlecode.com/svn/tz.php
+	wget -P "/var/www/" https://github.com/kwxiaozhu/shell/raw/master/tz.php
     chown apache:apache -R /var/www
 	sed -i  s/'listen = 127.0.0.1:9000'/'listen = \/var\/run\/php5-fpm.sock'/ /etc/php-fpm.d/www.conf
 #	sed -i  s/'pm = dynamic'/'pm = static'/ /etc/php-fpm.d/www.conf
@@ -236,7 +236,7 @@ function install_vhost {
 	mkdir "/home/www/$1"
  	chown -R nginx "/home/www/$1"
 	chmod -R 755 "/home/www/$1"
-	wget -P "/home/www/$1" http://kwxiaozhu.googlecode.com/svn/tz.php
+	wget -P "/home/www/$1" https://github.com/kwxiaozhu/shell/raw/master/tz.php
 
 # Setting up Nginx 
     cat > "/etc/nginx/sites-enabled/$1.conf" <<END
