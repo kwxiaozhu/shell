@@ -197,20 +197,22 @@ pid-file=/var/run/mysqld/mysqld.pid
 
 END
 	service mysqld start
+	sleep 2s
     # Generating a new password for the root user.
+	passwd=`get_password root@mysql`
+    mysqladmin -uroot  password "$passwd"
+    rm -rf ~/.my.cnf	
+    cat > ~/.my.cnf <<END
+[client]
+user = root
+password = $passwd
+END
 	cat > ~/temp.sql <<END
 delete from user where user='' or password='';
 flush privileges;
 END
 	mysql -uroot mysql<temp.sql
 	rm -rf ~/temp.sql
-	passwd=`get_password root@mysql`
-    mysqladmin -uroot  password "$passwd"
-    cat > ~/.my.cnf <<END
-[client]
-user = root
-password = $passwd
-END
 #	mysql -uroot -p"$passwd" <temp.sql
     chmod 600 ~/.my.cnf
 	service mysqld restart
