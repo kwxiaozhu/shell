@@ -17,6 +17,17 @@ function die {
     exit 1
 }
 
+get_char()
+{
+	SAVEDSTTY=`stty -g`
+	stty -echo
+	stty cbreak
+	dd if=/dev/tty bs=1 count=1 2> /dev/null
+	stty -raw
+	stty echo
+	stty $SAVEDSTTY
+}
+
 
 function get_password() {
     # Check whether our local salt is present.
@@ -31,14 +42,17 @@ function get_password() {
 }
 
 function install_lamp() {
+	echo "Press any key to start install lamp..."
+	char=`get_char`
 	yum -y install  mysql-server  httpd mod_fcgid php-cli php-curl php-gd php-sqlite php-mysql
 	service mysqld stop
 	service httpd stop
-# setup httpd
-    mkdir /etc/httpd/sites
-    chmod 700 -R /etc/httpd/sites
-    cat >>/etc/httpd/conf/httpd.conf<<ENDL
-Include sites/*
+	
+	echo "setup apache ......"
+	mkdir /etc/httpd/sites
+	chmod 700 -R /etc/httpd/sites
+	cat >>/etc/httpd/conf/httpd.conf<<ENDL
+Include sites/*.conf
 ENDL
     cat >>/etc/httpd/conf.d/fcgid.conf<<ENDL
 <IfModule mod_fcgid.c>
@@ -56,9 +70,8 @@ FcgidFixPathinfo 1
 </IfModule>
 ENDL
 
-# setup mysql    
-    rm -f /var/lib/mysql/ib*
-    cat > /etc/my.cnf <<END
+	echo "setup mysql ......"    
+	cat > /etc/my.cnf <<END
 [mysqld]
 datadir=/var/lib/mysql
 socket=/var/lib/mysql/mysql.sock
@@ -79,7 +92,7 @@ END
 #	sleep 2s
     # Generating a new password for the root user.
 	passwd=`get_password root@mysql`
-    mysqladmin -uroot  password "$passwd"
+	mysqladmin -uroot  password "$passwd"
 rm -rf ~/.my.cnf
     cat > ~/.my.cnf <<END
 [client]
@@ -92,90 +105,170 @@ flush privileges;
 END
 	mysql -uroot -p"$passwd" mysql<temp.sql
 	rm -rf ~/temp.sql
-    chmod 600 ~/.my.cnf
-	service mysqld restart
+	chmod 600 ~/.my.cnf
 
 # setup complete
-	service mysqld start
+	service mysqld restart
 	service httpd start
 	chkconfig mysqld on
 	chkconfig httpd on
+	echo "========================"
+	echo "LAMP setup complete!"
+	echo "Please use {`basename $0` vhost} to add a site"
+	echo "Enjoy!"
+	echo "========================"
 }
 
 function install_vhost {
-	if [ ! -d /var/www/sites ];
-        then
-        mkdir /var/www/sites
+	domain="www.kwxiaozhu.com"
+	echo "Please input domain:"
+	read -p "(Default domain: www.kwxiaozhu.com):" domain
+	if [ "$domain" = "" ]; then
+		domain="www.kwxiaozhu.com"
 	fi
-    chmod 711 /var/www/sites
-    read -p "Please input domain:" domain
-    read -p "Please input username:" username
-    if [ -f "/etc/httpd/sites/$username" ]; then
-    echo "Username exist,please enter another!"
-    exit 1
-    fi
- 
-    useradd -s /usr/sbin/nologin -d /var/www/sites/$username $username 
-    mkdir -p /var/www/sites/$username/{public_html,sessions,tmp,conf,logs}
+	grep "$domain" /etc/httpd/sites/* >/dev/null 2>&1
+	if [ $? -eq 0 ] ; then
+	echo "==========================="
+	echo "$domain is exist!"
+	echo "===========================" 
+	exit 0
+	else
+	echo "==========================="
+	echo "domain=$domain"
+	echo "==========================="	
+	fi
+
+	echo -n "Please input website username:"
+	read -p "(Default username: nobody):" username
+	if [ -f "/etc/httpd/sites/$username.conf" ]; then
+	user_exist='y'
+	echo "==========================="
+	echo "$username is exist!"
+	echo "==========================="
+	echo "Do you want to add a website use this username? (Y/n)"
+	read add_a_site
+		if [ "$add_a_site" == 'n' ]; then
+			exit 0	
+		fi
+	else
+	echo "==========================="
+	echo "username=$username"
+	echo "===========================" 
+	fi
+
+	echo ""
+	echo "Press any key to start create virtul host..."
+	char=`get_char`
+	
+	echo "Create Virtual Host User......"
+	if [ "$user_exist" !== 'y' ]; then 
+		useradd -s /bin/false -d /home/$username $username
+	fi 
+	
+	echo "Create Virtul Host directory......"
+	mkdir -p /var/www/sites/$username/{$domain,sessions,tmp,conf,logs}
+	
+	echo "set permissions of Virtual Host directory......"
 	chown -R $username:$username /var/www/sites/$username
-	chown $username:apache /var/www/sites/$username/public_html
-	
-	chmod 710 /var/www/sites/$username/public_html
+	chown $username:apache /var/www/sites/$username/$domain
+	chmod 711/var/www/sites
+	chmod 710 /var/www/sites/$username/$domain
 	chmod 700 /var/www/sites/$username/logs
+	wget -q -P "/var/www/sites/$username/$domain" https://github.com/kwxiaozhu/shell/raw/master/tz.php
 	
-    cat >/etc/httpd/sites/$username<<eof
-    <VirtualHost *:80>
-            ServerAdmin webmaster@localhost
-            ServerName      $domain
-            DocumentRoot /var/www/sites/$username/public_html
-            SuexecUserGroup $username $username
-            FcgidWrapper /var/www/sites/$username/conf/php-cgi .php
-    #       FcgidInitialEnv "/var/www/sites/$username/conf"
-            <Directory />
-                    DirectoryIndex index.php index.html
-                    Options ExecCGI Indexes FollowSymLinks MultiViews
-                    AllowOverride all
-            </Directory>
-            ErrorLog /var/www/sites/$username/logs/error-$username.log
-            LogLevel warn
-            CustomLog /var/www/sites/$username/logs/access-$username.log combined
-    </VirtualHost>
-eof
+	echo "Create Apache Virtual Host Config File ......"
+	if [ ! -f /etc/httpd/sites/$username.conf]; then 
+	cat >/etc/httpd/sites/$username.conf<<eof
+<VirtualHost *:80>
+    ServerAdmin webmaster@localhost
+    ServerName      $domain
+    DocumentRoot /var/www/sites/$username/$dmoain
+    SuexecUserGroup $username $username
+    FcgidWrapper /var/www/sites/$username/conf/php-cgi .php
+#   FcgidInitialEnv "/var/www/sites/$username/conf"
+    <Directory />
+            DirectoryIndex index.php index.html
+            Options +ExecCGI 
+            AllowOverride all
+            Order allow,deny
+	    Allow from all
+    </Directory>
+    ErrorLog /var/www/sites/$username/logs/error-$domain.log
+    LogLevel warn
+    CustomLog /var/www/sites/$username/logs/access-$domain.log combined
+    ServerSignature Off
     
-cat >/var/www/sites/$username/conf/php-cgi<<end
-    #!/bin/sh
-    export PHPRC="/var/www/sites/$username/conf/"
-    #export PHP_FCGI_MAX_REQUESTS=1000
-    #export PHP_FCGI_CHILDREN=5
-    #exec /usr/lib/cgi-bin/php
-    exec /usr/bin/php-cgi
+    php_admin_value open_basedir /var/www/sites/$username/$domain:/var/www/sites/$username/tmp/:/proc
+</VirtualHost>
+eof
+	else
+	cat >>/etc/httpd/sites/$username.conf<<eof
+<VirtualHost *:80>
+    ServerAdmin webmaster@localhost
+    ServerName      $domain
+    DocumentRoot /var/www/sites/$username/$dmoain
+    SuexecUserGroup $username $username
+    FcgidWrapper /var/www/sites/$username/conf/php-cgi .php
+#   FcgidInitialEnv "/var/www/sites/$username/conf"
+    <Directory />
+            DirectoryIndex index.php index.html
+            Options +ExecCGI 
+            AllowOverride all
+            Order allow,deny
+	    Allow from all
+    </Directory>
+    ErrorLog /var/www/sites/$username/logs/error-$domain.log
+    LogLevel warn
+    CustomLog /var/www/sites/$username/logs/access-$domain.log combined
+    ServerSignature Off
+    
+    php_admin_value open_basedir /var/www/sites/$username/$domain:/var/www/sites/$username/tmp/:/proc
+</VirtualHost>
+eof
+	fi
+	echo "Create PHP-CGI Config File ......"
+	if [ ! -f /var/www/sites/$username/conf/php-cgi ]; then
+	cat >/var/www/sites/$username/conf/php-cgi<<end
+#!/bin/sh
+export PHPRC="/var/www/sites/$username/conf/"
+#export PHP_FCGI_MAX_REQUESTS=1000
+#export PHP_FCGI_CHILDREN=5
+#exec /usr/lib/cgi-bin/php
+exec /usr/bin/php-cgi
 end
-    cat >/var/www/sites/$username/conf/php.ini<<start
-    [PHP]
-    short_open_tag=On
-    register_globals=Off
-    magic_quotes_gpc=On
-    post_max_size = 20M
-    upload_max_filesize = 20M
-    allow_url_fopen = On
-    memory_limit=64M
-    max_execution_time=30
-    default_socket_timeout=60
-    display_errors = off
-    register_argc_argv = on
-     
-    open_basedir = /var/www/sites/$username/public_html:/var/www/sites/$username/tmp/:/proc
-    upload_tmp_dir = /var/www/sites/$username/tmp
-    soap.wsdl_cache_dir = /var/www/sites/$username/tmp
-    session.save_path = /var/www/sites/$username/sessions
+	fi
+	if [! -f /var/www/sites/$username/conf/php.ini ]; then
+	cat >/var/www/sites/$username/conf/php.ini<<start
+[PHP]
+short_open_tag=On
+register_globals=Off
+magic_quotes_gpc=On
+post_max_size = 20M
+upload_max_filesize = 20M
+allow_url_fopen = On
+memory_limit=64M
+max_execution_time=30
+default_socket_timeout=60
+display_errors = off
+register_argc_argv = on
+
+;open_basedir = /var/www/sites/$username/:/var/www/sites/$username/tmp/:/proc
+upload_tmp_dir = /var/www/sites/$username/tmp
+soap.wsdl_cache_dir = /var/www/sites/$username/tmp
+session.save_path = /var/www/sites/$username/sessions
 start
-    wget -q -P "/var/www/sites/$username/public_html" http://github.com/kwxiaozhu/shell/raw/master/tz.php
-    chmod +x /var/www/sites/$username/conf/php-cgi
-    echo "vhost add success!"
-    echo "doamin is:$domain"
-    echo "username is:$username"
-    echo "vhost directory is: /var/www/sites/$username/public_html"
-    service httpd reload
+	fi
+	chown -R $username:$username /var/www/sites/$username/conf/
+	chmod +x /var/www/sites/$username/conf/php-cgi
+	service httpd reload
+	echo "============================================"
+	echo "Create Virtual Host Complete!"
+	echo "site:		http://$domain "
+	echo "webroot:	/var/www/sites/$username/$domain"
+	echo "webuser:	$username"
+	echo "Please visit http://$domain/tz.php to check"
+	echo "enjoy!"
+	echo "============================================"
 }
 
 function install_vsftpd {
