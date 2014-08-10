@@ -182,7 +182,7 @@ function install_vhost {
 <VirtualHost *:80>
     ServerAdmin webmaster@localhost
     ServerName      $domain
-    DocumentRoot /var/www/sites/$username/$dmoain
+    DocumentRoot /var/www/sites/$username/$domain
     SuexecUserGroup $username $username
     FcgidWrapper /var/www/sites/$username/conf/php-cgi .php
 #   FcgidInitialEnv "/var/www/sites/$username/conf"
@@ -204,7 +204,7 @@ eof
 <VirtualHost *:80>
     ServerAdmin webmaster@localhost
     ServerName      $domain
-    DocumentRoot /var/www/sites/$username/$dmoain
+    DocumentRoot /var/www/sites/$username/$domain
     SuexecUserGroup $username $username
     FcgidWrapper /var/www/sites/$username/conf/php-cgi .php
 #   FcgidInitialEnv "/var/www/sites/$username/conf"
