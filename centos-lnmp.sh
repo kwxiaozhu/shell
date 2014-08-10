@@ -384,13 +384,14 @@ END
 	fi
     service nginx reload
 	service php-fpm reload
-	echo "==========================="
+	echo "============================================"
 	echo "Create Virtual Host Complete!"
 	echo "site:		http://$domain "
 	echo "webroot:	/home/$username/$domain"
 	echo "webuser:	$username"
 	echo "Please visit http://$domain/tz.php to check"
 	echo "enjoy!"
+	echo "============================================"
 }
 
 function install_vsftpd {
