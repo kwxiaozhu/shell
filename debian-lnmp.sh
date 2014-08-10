@@ -329,7 +329,7 @@ php_admin_value[session.save_handler] = files
 php_admin_value[session.save_path] = /home/$username/sessions
 php_admin_value[session.cookie_path] = /home/$username/sessions
 php_admin_value[upload_tmp_dir] = /home/$username/tmp
-php_admin_value[disable_functions] = passthru,exec,system,chroot,scandir,chgrp,chown,shell_exec,proc_open,proc_get_status,ini_alter,ini_restore,dl,openlog,syslog,readlink,symlink,popepassthru,stream_socket_server,fsocket
+php_admin_value[disable_functions] = passthru,exec,system,chroot,chgrp,chown,shell_exec,proc_open,proc_get_status,ini_alter,ini_restore,dl,openlog,syslog,readlink,symlink,popepassthru,stream_socket_server,fsocket
 END
 	fi
 	echo "Create nginx vhost config file......"
