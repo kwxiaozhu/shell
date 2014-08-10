@@ -298,7 +298,9 @@ function install_vhost {
 	echo "set permissions of Virtual Host directory......"
 	chmod 711 /home
 	chmod 711 "/home/$username"
- 	chown -R $username:$username "/home/$username"
+ 		if [ "$user_exist" != 'y' ]; then 
+		chown -R $username:$username "/home/$username"
+	fi
 	chown -R $username:www-data  /home/$username/$domain
 	chmod 710 /home/$username/$domain
 	chmod 700 /home/$username/logs
