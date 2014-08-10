@@ -377,6 +377,7 @@ END
 	echo "webuser:	$username"
 	echo "Please visit http://$domain/tz.php to check"
 	echo "enjoy!"
+	echo "==========================="
 }
 
 function install_vsftpd {
