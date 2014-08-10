@@ -303,7 +303,7 @@ function install_vhost {
 	char=`get_char`
 
 	echo "Create Virtual Host User......"
-	if [ "$user_exist" !== 'y' ]; then 
+	if [ "$user_exist" != 'y' ]; then 
 		useradd -s /bin/false -d /home/$username $username
 	fi
 	echo "Create Virtul Host directory......"
@@ -312,7 +312,9 @@ function install_vhost {
 	echo "set permissions of Virtual Host directory......"
 	chmod 711 /home
 	chmod 711 "/home/$username"
- 	chown -R $username:$username "/home/$username"
+	if [ "$user_exist" != 'y' ]; then 
+		chown -R $username:$username "/home/$username"
+	fi
 	chown -R $username:nginx  /home/$username/$domain
 	chmod 710 /home/$username/$domain
 	chmod 700 /home/$username/logs
