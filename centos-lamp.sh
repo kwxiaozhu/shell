@@ -197,7 +197,7 @@ function install_vhost {
     LogLevel warn
     CustomLog /var/www/sites/$username/logs/access-$domain.log combined
     ServerSignature Off
-    
+</VirtualHost>    
 eof
 	else
 	cat >>/etc/httpd/sites/$username.conf<<eof
@@ -219,7 +219,7 @@ eof
     LogLevel warn
     CustomLog /var/www/sites/$username/logs/access-$domain.log combined
     ServerSignature Off
-
+</VirtualHost>  
 eof
 	fi
 	echo "Create PHP-CGI Config File ......"
