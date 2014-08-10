@@ -161,8 +161,8 @@ function install_vhost {
 	char=`get_char`
 	
 	echo "Create Virtual Host User......"
-	if [ "$user_exist" !== 'y' ]; then 
-		useradd -s /bin/false -d /home/$username $username
+	if [ "$user_exist" != 'y' ]; then 
+		useradd -s /bin/false -d /var/www/sites/$username $username
 	fi 
 	
 	echo "Create Virtul Host directory......"
@@ -171,13 +171,13 @@ function install_vhost {
 	echo "set permissions of Virtual Host directory......"
 	chown -R $username:$username /var/www/sites/$username
 	chown $username:apache /var/www/sites/$username/$domain
-	chmod 711/var/www/sites
+	chmod 711 /var/www/sites
 	chmod 710 /var/www/sites/$username/$domain
 	chmod 700 /var/www/sites/$username/logs
 	wget -q -P "/var/www/sites/$username/$domain" https://github.com/kwxiaozhu/shell/raw/master/tz.php
 	
 	echo "Create Apache Virtual Host Config File ......"
-	if [ ! -f /etc/httpd/sites/$username.conf]; then 
+	if [ ! -f "/etc/httpd/sites/$username.conf" ]; then 
 	cat >/etc/httpd/sites/$username.conf<<eof
 <VirtualHost *:80>
     ServerAdmin webmaster@localhost
@@ -223,7 +223,7 @@ eof
 eof
 	fi
 	echo "Create PHP-CGI Config File ......"
-	if [ ! -f /var/www/sites/$username/conf/php-cgi ]; then
+	if [ ! -f "/var/www/sites/$username/conf/php-cgi" ]; then
 	cat >/var/www/sites/$username/conf/php-cgi<<end
 #!/bin/sh
 export PHPRC="/var/www/sites/$username/conf/"
@@ -233,7 +233,7 @@ export PHPRC="/var/www/sites/$username/conf/"
 exec /usr/bin/php-cgi
 end
 	fi
-	if [! -f /var/www/sites/$username/conf/php.ini ]; then
+	if [ ! -f "/var/www/sites/$username/conf/php.ini" ]; then
 	cat >/var/www/sites/$username/conf/php.ini<<start
 [PHP]
 short_open_tag=On
