@@ -198,8 +198,6 @@ function install_vhost {
     CustomLog /var/www/sites/$username/logs/access-$domain.log combined
     ServerSignature Off
     
-    php_admin_value open_basedir /var/www/sites/$username/$domain:/var/www/sites/$username/tmp/:/proc
-</VirtualHost>
 eof
 	else
 	cat >>/etc/httpd/sites/$username.conf<<eof
@@ -221,9 +219,7 @@ eof
     LogLevel warn
     CustomLog /var/www/sites/$username/logs/access-$domain.log combined
     ServerSignature Off
-    
-    php_admin_value open_basedir /var/www/sites/$username/$domain:/var/www/sites/$username/tmp/:/proc
-</VirtualHost>
+
 eof
 	fi
 	echo "Create PHP-CGI Config File ......"
@@ -252,7 +248,7 @@ default_socket_timeout=60
 display_errors = off
 register_argc_argv = on
 
-;open_basedir = /var/www/sites/$username/:/var/www/sites/$username/tmp/:/proc
+open_basedir = /var/www/sites/$username/:/proc
 upload_tmp_dir = /var/www/sites/$username/tmp
 soap.wsdl_cache_dir = /var/www/sites/$username/tmp
 session.save_path = /var/www/sites/$username/sessions
