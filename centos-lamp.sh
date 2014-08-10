@@ -159,14 +159,14 @@ function install_vhost {
 	echo ""
 	echo "Press any key to start create virtul host..."
 	char=`get_char`
+
+	echo "Create Virtul Host directory......"
+	mkdir -p /var/www/sites/$username/{$domain,sessions,tmp,conf,logs}
 	
 	echo "Create Virtual Host User......"
 	if [ "$user_exist" != 'y' ]; then 
 		useradd -s /bin/false -d /var/www/sites/$username $username
 	fi 
-	
-	echo "Create Virtul Host directory......"
-	mkdir -p /var/www/sites/$username/{$domain,sessions,tmp,conf,logs}
 	
 	echo "set permissions of Virtual Host directory......"
 	chown -R $username:$username /var/www/sites/$username
