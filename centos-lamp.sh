@@ -252,6 +252,8 @@ open_basedir = /var/www/sites/$username/:/proc
 upload_tmp_dir = /var/www/sites/$username/tmp
 soap.wsdl_cache_dir = /var/www/sites/$username/tmp
 session.save_path = /var/www/sites/$username/sessions
+disable_functions = passthru,exec,system,chroot,chgrp,chown,shell_exec,proc_open,proc_get_status,ini_alter,ini_restore,dl,openlog,syslog,readlink,symlink,popepassthru,stream_socket_server,fsocket
+END
 start
 	fi
 	chown -R $username:$username /var/www/sites/$username/conf/
