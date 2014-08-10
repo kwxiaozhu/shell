@@ -43,7 +43,7 @@ function install_lnmp() {
         mkdir /var/www
 	fi
     chown www-data:www-data /var/www
-	wget -P "/var/www/" https://github.com/kwxiaozhu/shell/raw/master/tz.php
+	wget -q -P "/var/www/" https://github.com/kwxiaozhu/shell/raw/master/tz.php
 	cp /etc/php5/fpm/pool.d/www.conf /etc/php5/fpm/pool.d/www-data.conf
 	sed -i  s/'listen = 127.0.0.1:9000'/'listen = \/var\/run\/php5-fpm.sock'/ /etc/php5/fpm/pool.d/www-data.conf
 #	sed -i  s/'pm = dynamic'/'pm = static'/ /etc/php5/fpm/pool.d/www-data.conf
