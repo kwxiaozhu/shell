@@ -358,7 +358,7 @@ export PATH=/bin:/usr/bin:/sbin:/usr/sbin
 
 check_sanity
 case "$1" in
-lnmp)
+lamp)
     install_lamp
     ;;
 system)
@@ -387,7 +387,7 @@ sshport)
 *)
     echo 'Usage:' `basename $0` '[option]'
     echo 'Available option:'
-    for option in system lnmp vhost vsftpd ssh sshport
+    for option in system lamp vhost vsftpd ssh sshport
     do
         echo '  -' $option
     done
