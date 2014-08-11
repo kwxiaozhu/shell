@@ -290,18 +290,11 @@ function update_upgrade {
     # Run through the apt-get update/upgrade first. This should be done before
     # we try to install any package
 
-	 cat > "/etc/apt/sources.list" <<END
-deb http://packages.dotdeb.org squeeze all
-deb-src http://packages.dotdeb.org squeeze all
-
-deb http://ftp.debian.org/debian squeeze main contrib non-free
-deb http://security.debian.org squeeze/updates main contrib non-free
-END
-	wget http://www.dotdeb.org/dotdeb.gpg
-	cat dotdeb.gpg | apt-key add -
-	rm -rf dotdeb.gpg
-    apt-get -q -y update
-    apt-get -q -y upgrade
+	echo "deb http://packages.dotdeb.org $(lsb_release -cs) all" | tee -a /etc/apt/sources.list
+	echo "deb-src http://packages.dotdeb.org $(lsb_release -cs) all" | tee -a /etc/apt/sources.list
+	wget -O - http://www.dotdeb.org/dotdeb.gpg | apt-key add -
+	apt-get -q -y update
+	apt-get -q -y upgrade
 	apt-get clean
 }
 
