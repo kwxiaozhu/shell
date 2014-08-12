@@ -99,7 +99,7 @@ location / {
 # This is cool because no php is touched for static content. 
 # include the "?$args" part so non-default permalinks doesn't 
 # break when using query string
-	try_files $uri $uri/ /index.php?$args; 
+	try_files \$uri \$uri/ /index.php?\$args; 
 }
 END
 	cat > /etc/nginx/fastcgi_params <<END
@@ -132,7 +132,7 @@ fastcgi_param  REDIRECT_STATUS    200;
 #client_body_temp_path /tmp/client_body_temp;
 #client_body_in_file_only clean;
 #fastcgi_param REQUEST_BODY_FILE $request_body_file;
-fastcgi_param  PHP_VALUE  "open_basedir=$document_root:/tmp/:/proc/";
+fastcgi_param  PHP_VALUE  "open_basedir=\$document_root:/tmp/:/proc/";
 fastcgi_index index.php;
 END
 
